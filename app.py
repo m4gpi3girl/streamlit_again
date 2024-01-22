@@ -5,22 +5,23 @@ import requests
 import zipfile
 import json
 
-# extracting IMD
-# ------------------------------------------------------------------------------------------------------------------------------------------
+# imd extract
+
 url = 'https://assets.publishing.service.gov.uk/media/5d8b3abded915d0373d3540f/File_1_-_IMD2019_Index_of_Multiple_Deprivation.xlsx'
 
 res = requests.get(url)
 content = io.BytesIO(res.content)
 
 # Read all sheets into a dictionary of DataFrames
-dfs = pd.read_excel(content, sheet_name=None)
+dfs = pd.read_excel(content, sheet_name='IMD2019')
 
-# Display all DataFrames
-for sheet_name, df in dfs.items():
-    st.write(f"Sheet: {sheet_name}")
-    st.write(df)
-# ---------------------------------------------------------------------------------------------------------------------------------------------
-    
+df = dfs
+df['Unique_ID'] = range(1, len(df) + 1)
+df.set_index('Unique_ID', inplace=True)
+
+st.write(df)
+
+# charity commission data
 
 url = 'https://ccewuksprdoneregsadata1.blob.core.windows.net/data/json/publicextract.charity.zip'
 
@@ -37,14 +38,7 @@ with zipfile.ZipFile(io.BytesIO(res.content), 'r') as zip_ref:
 json_data = json.loads(json_content)
 df2 = pd.json_normalize(json_data)  # Adjust as needed based on the JSON structure
 
-# Display the DataFrame
 st.write(df2)
-
-cols = list(df2)
-st.write(cols)
-
-
-df3 = df2[df2['charity_registration_status'] == 'removed']
 
 
 
